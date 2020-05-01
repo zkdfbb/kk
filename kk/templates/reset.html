@@ -1,0 +1,40 @@
+{% extends base.html %}
+
+{% block content %}
+<form class="reset layui-form" action="/reset" method="POST">
+  <div class="layui-form-item">
+    <label class="layui-form-label">邮箱</label>
+    <div class="layui-input-block">
+      <input type="text" name="email" required placeholder="请输入邮箱" class="layui-input">
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">验证码</label>
+    <div class="layui-input-block">
+      <input name="code" required placeholder="请输入验证码" class="layui-input">
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <div class="layui-input-block">
+      <button type="button" class="layui-btn layui-btn-normal btn-send">发送验证码</button>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">密码</label>
+    <div class="layui-input-block">
+      <input type="password" name="password" required placeholder="请输入新密码" class="layui-input">
+    </div>
+  </div>
+  <div class="layui-form-item">
+      <label class="layui-form-label">重复密码</label>
+      <div class="layui-input-block">
+        <input type="password" name="password" required placeholder="请重复新密码" class="layui-input">
+      </div>
+    </div>
+  <div class="layui-form-item">
+    <div class="layui-input-block">
+      <button class="layui-btn" lay-submit lay-filter="default">立即提交</button>
+    </div>
+  </div>
+</form>
+{% end %}

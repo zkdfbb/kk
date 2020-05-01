@@ -1,0 +1,83 @@
+{% extends base.html %}
+
+{% block content %}
+<div class="layui-content">
+
+  <div class="layui-tab layui-tab-brief" lay-filter="admin">
+    <ul class="layui-tab-title">
+      <li lay-id="1">会员设置</li>
+      <li lay-id="2">密码修改</li>
+    </ul>
+    <div class="layui-tab-content">
+      <div class="layui-tab-item layui-show">
+        <blockquote class="layui-elem-quote">
+          <p>设置Kindle推送需先将{{ handler.app.email.sender }}添加到已认可的发件人电子邮箱列表</p>
+        </blockquote>
+        <form class="layui-form" action="/admin" method="POST">
+          <div class="layui-form-item">
+            <label class="layui-form-label">Kindle邮箱</label>
+            <div class="layui-input-inline">
+              <input name="kindle" autocomplete="off" class="layui-input" value="{{ current_user.kindle or '' }}">
+            </div>
+            <div class="layui-form-mid">
+              <button type="button" class="layui-btn layui-btn-primary layui-btn-xs layui-btn-radius btn-email">发送验证码</button>
+            </div>
+          </div>
+          <div class="layui-form-item">
+            <label class="layui-form-label">验证码</label>
+            <div class="layui-input-inline">
+              <input name="code" autocomplete="off" class="layui-input">
+            </div>
+          </div>
+          <div class="layui-form-item">
+            <label class="layui-form-label">公开访问</label>
+            <div class="layui-input-inline">
+              <input type="checkbox" name="public" lay-skin="switch" lay-text="开启|关闭" {% if current_user.public %}checked{% end %}>
+            </div>
+            <div class="layui-form-mid layui-word-aux">公开则所有人都可访问</div>
+          </div>
+          <div class="layui-form-item">
+            <div class="layui-input-block">
+              <button style="width:100px" class="layui-btn" lay-submit lay-filter="default">保存</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="layui-tab-item">
+        <blockquote class="layui-elem-quote">
+          <p>在此处修改您的密码，如果忘记了原密码，请选择 <a href="/reset">重置密码</a></p>
+        </blockquote>
+        <form class="layui-form" action="/user" method="POST">
+          <div class="layui-form-item">
+            <label class="layui-form-label">原密码</label>
+            <div class="layui-input-inline">
+              <input type="password" name="old_password" placeholder="原密码" autocomplete="off" class="layui-input" required lay-verify="required" readonly onfocus="this.removeAttribute('readonly');">
+            </div>
+          </div>
+          <div class="layui-form-item">
+            <label class="layui-form-label">新密码</label>
+            <div class="layui-input-inline">
+              <input type="password" name="password" placeholder="新密码" autocomplete="off" class="layui-input" required lay-verify="required" readonly onfocus="this.removeAttribute('readonly');">
+            </div>
+          </div>
+          <div class="layui-form-item">
+            <label class="layui-form-label">新密码</label>
+            <div class="layui-input-inline">
+              <input type="password" name="password" placeholder="新密码" autocomplete="off" class="layui-input" required lay-verify="required" readonly onfocus="this.removeAttribute('readonly');">
+            </div>
+          </div>
+          <div class="layui-form-item">
+            <div class="layui-input-block">
+              <button style="width:100px" class="layui-btn" lay-submit lay-filter="default">保存</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+{% end %}

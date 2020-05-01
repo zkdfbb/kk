@@ -1,0 +1,46 @@
+{% extends base.html %}
+
+{% block content %}
+<form class="signup layui-form" action="/signup" method="POST" href="/">
+  <input type="hidden" name="ip" value="{{ handler.ip }}">
+  <div class="layui-form-item">
+    <label class="layui-form-label">邮箱</label>
+    <div class="layui-input-inline">
+      <input type="text" name="email" required placeholder="请输入邮箱" class="layui-input" autocomplete="off">
+    </div>
+    <div style="padding-top:4px">
+      <button type="button" class="layui-btn layui-btn-sm btn-email">发送验证码</button>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">验证码</label>
+    <div class="layui-input-inline">
+      <input type="text" name="code" required lay-verify="required" placeholder="请输入验证码" class="layui-input" autocomplete="off">
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">用户名</label>
+    <div class="layui-input-inline">
+      <input type="text" name="username" required placeholder="请输入用户名" class="layui-input" autocomplete="off">
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">密码</label>
+    <div class="layui-input-inline">
+      <input type="password" name="password" required placeholder="请输入密码" class="layui-input" autocomplete="off">
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">重复密码</label>
+    <div class="layui-input-inline">
+      <input type="password" name="password" required placeholder="请输入密码" class="layui-input" autocomplete="off">
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <div class="layui-input-block">
+      <button class="layui-btn" lay-submit lay-filter="default">立即提交</button>
+    </div>
+  </div>
+</form>
+{% end %}
+

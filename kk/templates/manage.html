@@ -1,0 +1,52 @@
+{% extends base.html %}
+
+{% block content %}
+<form class="layui-form">
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <div class="layui-input-inline">
+        <input type="text" name="id" placeholder="id" autocomplete="off" class="layui-input" {% if handler.args.id %}value="{{ handler.args.id }}"{% end %}>
+      </div>
+    </div>
+    <div class="layui-inline">
+      <div class="layui-input-inline">
+        <input type="text" name="username" placeholder="username" autocomplete="off" class="layui-input" {% if handler.args.username %}value="{{ handler.args.username }}"{% end %}>
+      </div>
+    </div>
+    <div class="layui-inline">
+      <button class="layui-btn" lay-submit="" >提交</button>
+    </div>
+  </div>
+</form>
+
+
+<table class="layui-table table-hover table-bordered table-sm" lay-skin="line" align="center">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>帐号</th>
+      <th class="pc">注册时间</th>
+      <th class="pc">用户角色</th>
+      <th>操作</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for doc in entries %}
+    <tr data-id="{{ doc._id }}">
+      <td><a target="_blank" href="/disk/{{ doc.id }}">{{ doc.id }}</a></td>
+      <td><a target="_blank" href="/share?token={{ doc.token }}">{{ doc.username or doc.nickName }}</a></td>
+      <td class="pc">{{ str(doc.created_at)[:19] }}</td>
+      <td class="pc">{{ '管理员' if doc.admin else '普通用户' }}</td>
+      <td>
+        <button action="toggle" class="layui-btn layui-btn-sm layui-btn-radius btn-manage">修改角色</button>
+        <button action="delete" class="layui-btn layui-btn-sm layui-btn-danger layui-btn-radius btn-manage">删除</button>
+      </td>
+    </tr>
+    {% end %}
+  </tbody>
+</table>
+
+<div id="pagination"></div>
+
+{% end %}

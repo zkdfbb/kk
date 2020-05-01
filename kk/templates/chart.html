@@ -1,0 +1,133 @@
+{% extends base.html %}
+
+{% block content %}
+
+{% if handler.request.path == '/chart' %}
+<div class="layui-collapse">
+  <div class="layui-colla-item">
+    <h2 class="layui-colla-title">帮助文档</h2>
+    <div class="layui-colla-content {% if not docs %}layui-show{% end %}">
+      <div>
+        <p>POST /chart/name, 其中name是chart的名字</p>
+        <p>body为json格式字符串，为list或dict，每个成员都是一张图表</p>
+        <p>简易模式支持3种格式的图表，分别为折线图(line)、直方图(column)、饼图(pie)</p>
+        <p>若使用原始数据，请参考<a target="_blank" href="https://www.highcharts.com.cn/demo/highcharts">Highcharts演示</a></p>
+      </div>
+      <pre><code class="bash">data='[
+    {
+        "type": "line",
+        "title": "line chart",
+        "xAxis": ["一月", "二月", "三月", "四月", "五月", "六月"],
+        "series": [
+            {
+                "name": "东京",
+                "visible": true,
+                "data": [7.0, 6.9, 9.5, 14.5, 18.2, 21.5]
+            },
+            {
+                "name": "纽约",
+                "visible": false,
+                "data": [-0.2, 0.8, 5.7, 11.3, 17.0, 22.0]
+            }
+        ]
+    },
+    {
+        "type": "column",
+        "title": "column chart",
+        "xAxis": ["一月", "二月", "三月", "四月", "五月", "六月"],
+        "series": [
+            {
+                "name": "东京",
+                "visible": true,
+                "data": [7.0, 6.9, 9.5, 14.5, 18.2, 21.5]
+            },
+            {
+                "name": "纽约",
+                "visible": false,
+                "data": [-0.2, 0.8, 5.7, 11.3, 17.0, 22.0]
+            }
+        ]
+    },
+    {
+        "type": "pie",
+        "title": "pie chart",
+        "series": [
+            {
+                "name": "day money",
+                "data": [
+                    ["one", 1.0],
+                    ["two", 2.0],
+                    ["three", 3.0]
+                ]
+            }
+        ]
+    }
+]'
+curl -XPOST {{ handler.scheme }}://{{ handler.host }}/chart/test -d $data</code></pre>
+    </div>
+  </div>
+</div>
+
+{% if docs %}
+<table class="layui-table">
+  <thead>
+    <tr>
+      <th>name</td>
+      <th>date</td>
+      <th>action</td>
+    </tr>
+  </thead>
+  <tbody>
+    {% for doc in docs %}
+    <tr data-id="{{ doc.name }}">
+      <td><a href="/chart/{{ doc.name }}">{{ doc.name }}</a></td>
+      <td>{{ doc.date }}</td>
+      <td><button class="layui-btn layui-btn-danger layui-btn-xs delete-chart">delete</td>
+    </tr>
+    {% end %}
+  </tbody>
+</table>
+<div id="pagination"></div>
+{% end %}
+
+{% end %}
+
+{% end %}
+
+{% block js %}
+<script src="{{ static_url('src/js/highcharts.js') }}"></script>
+<script src="{{ static_url('src/js/highcharts-more.js') }}"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+  $(function () {
+    $(document).on('click', '.delete-chart', function(){
+      var tr = $(this).parents('tr');
+      var id = tr.data('id');
+      $(this).addClass('layui-btn-disabled').text('deleting');
+      $.ajax({
+        url: '/chart/' + id,
+        type: 'DELETE',
+        success: function(ret){
+          tr.slideUp();
+        }
+      })
+    });
+    $(document).on('click', '.hide-all', function(){
+      var chart = $(this).parents('.chart-wrap').children('.chart-container').highcharts();
+      for (var i = 0; i < chart.series.length; i++)
+        chart.series[i].hide();
+    });
+    $(document).on('click', '.show-all', function(){
+      var chart = $(this).parents('.chart-wrap').children('.chart-container').highcharts();
+      for (var i = 0; i < chart.series.length; i++)
+        chart.series[i].show();
+    });
+    $.get(location.pathname + '?f=json', function(ret){
+      for(var i in ret.containers){
+        $('#content').append('<div class="chart-wrap"><div class="chart-container" id="container-{0}" style="margin: 50px;"></div></div>'.format(i));
+        $('#container-{0}'.format(i)).highcharts( ret.containers[i] );
+      }
+    });
+  })
+</script>
+{% end %}

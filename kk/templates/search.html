@@ -1,0 +1,59 @@
+<form class="layui-form" method="GET" style="margin-bottom: 2rem">
+  {% import math %}
+  {% set handler.args.searchs += ['sort', 'order'] %}
+  {% set handler.args.searchs += list(set([x for x in handler.request.arguments if not x.startswith('_')]) - set(map(lambda item:item.split(':')[-1], handler.args.searchs))) %}
+  {% set cols = 3 %}
+  {% set rows = int(math.ceil(len(handler.args.searchs)/cols)) %}
+
+  {% for i in range(rows) %}
+  <div class="layui-form-item">
+    {% for j in range(cols) %}
+    {% if i*cols+j < len(handler.args.searchs) %}
+       {% if handler.args.searchs[i*cols+j].find(':') >= 0 %}
+       {% set label = handler.args.searchs[i*cols+j].split(':')[0] %}
+       {% set field = handler.args.searchs[i*cols+j].split(':')[1] %}
+       {% else %}
+       {% set label = handler.args.searchs[i*cols+j] %}
+       {% set field = handler.args.searchs[i*cols+j] %}
+       {% end %}
+       <div class="layui-inline">
+         <label class="layui-form-label" title="{{ field }}">{{ label }}</label>
+         <div class="layui-input-inline">
+           {% if handler.args.options and field in handler.args.options %}
+           <select lay-verify="" class="{{ field }}" name="{{ field }}" {% if handler.args.multiple and field in handler.args.multiple %}multiple{% end %} {% if handler.args.livesearch and field in handler.args.livesearch %}data-live-search="true"{% end %}>
+             {% if not (handler.args.multiple and field in handler.args.multiple) %}
+             <option value="">unlimited</option>
+             {% end %}
+             {% for option in handler.args.options[field] %}
+             <option value="{{ option.split(':')[0] }}" {% if (isinstance(handler.args.get(field), (list, set)) and str(option.split(':')[0]) in map(lambda it:str(it), handler.args[field])) or str(option.split(':')[0]) == str(handler.args.get(field))  %}selected="selected"{% end %}>{{ option.split(':')[-1] }}</option>
+             {% end %}
+           </select>
+           {% elif handler.args.types and field in handler.args.types %}
+           <input class="layui-input {{ field }}" name="{{ field }}" value="{{ handler.args.get(field, '') }}" type="{{ handler.args.types[field ] }}">
+           {% else %}
+           <input class="layui-input {{ field }}" name="{{ field }}" value="{{ handler.args.get(field, '') }}">
+           {% end %}
+         </div>
+       </div>
+       {% else %}
+       {% break %}
+       {% end %}
+       {% end %}
+       {% if i == rows - 1 %}
+       {% if j == cols - 1 and i*cols+j < len(handler.args.searchs) %}
+  </div>
+  <div class="layui-form-item">
+    {% end %}
+    <div class="layui-inline">
+      <div class="layui-form-label" style="margin-top: -10px;">
+        <input type="checkbox" lay-skin="primary" name="_regex" title="regex" {% if handler.args._regex %}checked{% end %}>
+      </div>
+      <div class="layui-input-inline">
+        <button class="layui-btn">search</button>
+      </div>
+    </div>
+    {% end %}
+  </div>
+  {% end %}
+
+</form>

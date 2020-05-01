@@ -1,0 +1,202 @@
+{% extends base.html %}
+
+{% block content %}
+
+{% if handler.request.path == '/table' %}
+<div class="layui-collapse">
+  <div class="layui-colla-item">
+    <h2 class="layui-colla-title">帮助文档</h2>
+    <div class="layui-colla-content {% if not docs %}layui-show{% end %}">
+      <table class="layui-table">
+        <thead>
+          <tr>
+            <th>method</th>
+            <th>path</th>
+            <th>description</th>
+            <th colspan=2>parameters</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td rowspan=6>GET</td>
+            <td rowspan=6>/table/name</td>
+            <td rowspan=6>展示名为name的表<br>可选参数如右所述</td>
+          </tr>
+          <tr>
+            <td>sort</td>
+            <td>使用哪个字段排序，默认为插入顺序倒叙</td>
+          </tr>
+          <tr>
+            <td>order</td>
+            <td>顺序还是倒叙，默认为倒叙</td>
+          </tr>
+          <tr>
+            <td>page</td>
+            <td>当前页数，默认为1</td>
+          </tr>
+          <tr>
+            <td>count</td>
+            <td>每一页显示多少项，默认为20</td>
+          </tr>
+          <tr>
+            <td>f</td>
+            <td>当f=json时，返回json格式数据，可用于获取标注结果</td>
+          </tr>
+          <tr>
+            <td rowspan=5>POST</td>
+            <td rowspan=5>/table/name</td>
+            <td rowspan=5>新增名为name的表<br>body为json格式，其字段类型描述如右所述</td>
+          </tr>
+          <tr>
+            <td>fields</td>
+            <td>有哪些字段以及其类型</td>
+          </tr>
+          <tr>
+            <td>docs</td>
+            <td>表示所有文档，为一个list，成员为dict</td>
+          </tr>
+          <tr>
+            <td>search</td>
+            <td>表示为哪些字段提供搜索</td>
+          </tr>
+          <tr>
+            <td>mark</td>
+            <td>key哪个字段用于标记，value可取哪些值，unique结果是否唯一<br>如可选多个值并且docs字段内有值，其必须为list类型</td>
+          </tr>
+          <tr>
+            <td>DELETE</td>
+            <td>/table/name</td>
+            <td>删除名为name的表</td>
+            <td colspan=2></td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div>
+        <p>用于展示表格或者标注服务</p>
+        <pre><code class="bash">data='{
+    "fields": ["id:int", "title:str", "publish_time:datetime", "tag:int"],
+    "docs": [{"id": 1, "title":"hello", "publish_time": "2017-01-01 10:00:00" }],
+    "search": ["id", "title", "publish_time"],
+    "mark": [{"key": "tag", "value": [0, 1, 2], "unique": false}]
+}'
+curl -XPOST {{ handler.scheme }}://{{ handler.host }}/table/test -d $data</code></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if docs %}
+<table class="layui-table">
+  <thead>
+    <tr>
+      <th>name</td>
+      <th>date</td>
+      <th>action</td>
+    </tr>
+  </thead>
+  <tbody>
+    {% for doc in docs %}
+    <tr data-id="{{ doc.name }}">
+      <td><a href="/table/{{ doc.name }}">{{ doc.name }}</a></td>
+      <td>{{ doc.date }}</td>
+      <td><button class="layui-btn layui-btn-danger layui-btn-xs delete-table">delete</td>
+    </tr>
+    {% end %}
+  </tbody>
+</table>
+<div id="pagination"></div>
+{% end %}
+
+{% else %}
+
+{% include search.html %}
+
+<div class="table-responsive">
+  <table class="layui-table" lay-even>
+    <thead>
+      <tr>
+        {% for field in handler.args.fields %}
+        {% if field not in list(map(lambda x: x['key'], handler.args.marks)) %}
+        <th>{{ field }}</th>
+        {% end %}
+        {% end %}
+        {% for mark in handler.args.marks %}
+        <th>{{ mark['key'] }}</th>
+        {% end %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in entries %}
+      <tr data-id="{{ entry._id }}">
+        {% for field in handler.args.fields %}
+        {% if field not in list(map(lambda x: x['key'], handler.args.marks)) %}
+        <td>{% raw entry.get(field, 'hello') %}</td>
+        {% end %}
+        {% end %}
+        {% for mark in handler.args.marks %}
+        <td>
+          {% for value in mark['value'] %}
+          <button class="layui-btn layui-btn-sm layui-btn-mark {% if mark.get('unique') %}layui-btn-unique{% end %} {% if (( mark.get('unique') and entry.get(mark['key']) == value ) or (not mark.get('unique') and value in entry.get(mark['key'], []))) %}layui-btn-danger{% end %}" data-key="{{ mark['key'] }}">{{ value }}</button>
+          {% end %}
+        </td>
+        {% end %}
+      </tr>
+      {% end %}
+    </tbody>
+  </table>
+  <div id="pagination"></div>
+</div>
+{% end %}
+
+{% end %}
+
+{% block js %}
+
+<script>
+  $(function(){
+    hljs.initHighlightingOnLoad();
+
+    $(document).on('click', '.delete-table', function(){
+      var tr = $(this).parents('tr')
+      var id = tr.data('id');
+      $(this).addClass('layui-btn-disabled').text('deleting');
+      $.ajax({
+        url: '/table/' + id,
+        type: 'DELETE',
+        success: function(ret){
+          tr.slideUp();
+        }
+      })
+    });
+    $(document).on('click', '.layui-btn-mark', function(){
+      var tagged = $(this).hasClass('layui-btn-danger');
+      var unique = $(this).hasClass('layui-btn-unique');
+      if(unique){
+        $(this).parents('td').find('.layui-btn-mark').removeClass('layui-btn-danger');
+      }
+      $(this).toggleClass('layui-btn-danger');
+      var _id = $(this).parents('tr').data('id');
+      var action = tagged ? "del" : "add";
+      var data = {
+        "_id": _id,
+        "unique": unique,
+        "action": action,
+        "key": $(this).data("key"),
+        "value": $(this).text(),
+      }
+      $.ajax({
+        url: location.path,
+        type: 'PUT',
+        data: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        success: function(ret){
+          if(ret.err) alert(ret.msg);
+        }
+      });
+    });
+  });
+</script>
+{% end %}
